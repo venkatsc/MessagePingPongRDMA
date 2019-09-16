@@ -38,7 +38,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
      * @throws java.io.IOException
      */
     public RdmaShuffleServerEndpoint createEndpoint(RdmaCmId idPriv, boolean serverSide) throws IOException {
-        return new RdmaShuffleServerEndpoint(endpointGroup, idPriv, serverSide, 100);
+        return new RdmaShuffleServerEndpoint(endpointGroup, idPriv, serverSide, 4096);
     }
 
     public RdmaServer(RdmaConfig rdmaConfig) {
@@ -50,6 +50,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
         // endpoint.dispatchCqEvent() method.
         endpointGroup = new RdmaActiveEndpointGroup<RdmaShuffleServerEndpoint>(1000, true, 128, 4, 128);
         endpointGroup.init(this);
+        endpointGroup.getConnParam().setRnr_retry_count((byte)7);
         //create a server endpoint
         serverEndpoint = endpointGroup.createServerEndpoint();
 
@@ -95,12 +96,11 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                         RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId);
                     } else { // first receive succeeded. Read the data and repost the next message
                         RdmaMessage.PartitionRequest clientRequest = (RdmaMessage.PartitionRequest) RdmaMessage.PartitionRequest.readFrom(clientEndpoint.getReceiveBuffer());
-
                         System.out.println("client requested partition id: " + clientRequest.getPartitionId());
+//                        RdmaMessage.PartitionRequest request = new RdmaMessage.PartitionRequest(clientRequest
+//                                .getPartitionId());
                         clientEndpoint.getReceiveBuffer().clear();
-                        RdmaMessage.PartitionRequest request = new RdmaMessage.PartitionRequest(clientRequest
-                                .getPartitionId());
-                        request.writeTo(clientEndpoint.getSendBuffer());
+                        clientRequest.writeTo(clientEndpoint.getSendBuffer());
                         RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId); // post next receive
                         RdmaSendReceiveUtil.postSendReq(clientEndpoint, ++workRequestId);
                     }

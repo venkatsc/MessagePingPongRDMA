@@ -1,5 +1,7 @@
 package com.message;
 
+import sun.nio.ch.DirectBuffer;
+
 import java.nio.ByteBuffer;
 
 public class RDMAmessageTest {
@@ -7,7 +9,10 @@ public class RDMAmessageTest {
 
         PartitionRequest request = new PartitionRequest(1);
         try {
-            request.writeTo(ByteBuffer.allocateDirect(8));
+            ByteBuffer buffer =ByteBuffer.allocateDirect(8);
+            System.out.println(((DirectBuffer)buffer).address());
+            System.out.println(buffer.capacity());
+            request.writeTo(buffer);
             System.out.println(request.getPartitionId());
         } catch (Exception e) {
             e.printStackTrace();

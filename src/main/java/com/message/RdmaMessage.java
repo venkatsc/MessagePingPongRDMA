@@ -74,6 +74,7 @@ public abstract class RdmaMessage {
                         "" + PartitionResponse.MESSAGE_LENGTH);
             }
             buffer.get();
+//            buffer.getInt();
 //            System.out.println("Response message id "+(int)buffer.get());
             PartitionResponse response = new PartitionResponse(buffer.getInt());
 //            byte[] message = new byte[20];

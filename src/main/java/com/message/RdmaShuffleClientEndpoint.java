@@ -14,19 +14,20 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
 //    private static final Logger LOG = LoggerFactory.getLogger(RdmaShuffleClientEndpoint.class);
 
     private int bufferSize; // Todo: set default buffer size
-
-    public ByteBuffer getReceiveBuffer() {
-        return receiveBuffer;
-    }
-
+//
+//    public ByteBuffer getReceiveBuffer() {
+//        return receiveBuffer;
+//    }
+//
+    private IbvMr wholeAddressSpace;
     private ByteBuffer receiveBuffer; // Todo: add buffer manager with multiple buffers
-    private IbvMr registeredReceiveMemory; // Registered memory for the above buffer
-
+//    private IbvMr registeredReceiveMemory; // Registered memory for the above buffer
+//
     private ByteBuffer sendBuffer;
-    private IbvMr registeredSendMemory;
-
-    private ByteBuffer availableFreeReceiveBuffers;
-    private IbvMr availableFreeReceiveBuffersRegisteredMemory;
+//    private IbvMr registeredSendMemory;
+//
+//    private ByteBuffer availableFreeReceiveBuffers;
+//    private IbvMr availableFreeReceiveBuffersRegisteredMemory;
     private ArrayBlockingQueue<RdmaMessage> requestQueue = new ArrayBlockingQueue<>(1000);
     private ArrayBlockingQueue responseQueue = new ArrayBlockingQueue<>(1000);
 //    private PartitionRequestClientHandler clientHandler;
@@ -51,32 +52,38 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
 
     public void init() throws IOException {
         super.init();
-        this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
-        this.registeredReceiveMemory = registerMemory(receiveBuffer).execute().getMr(); // register the send buffer
-
         this.sendBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
-        this.registeredSendMemory = registerMemory(sendBuffer).execute().getMr(); // register the send buffer
+        this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
+        // Register on demand paging
+        wholeAddressSpace = registerMemory().execute().getMr();
 
-        this.availableFreeReceiveBuffers = ByteBuffer.allocateDirect(2); // TODO: assumption of less receive buffers
-        this.availableFreeReceiveBuffersRegisteredMemory = registerMemory(availableFreeReceiveBuffers).execute()
-                .getMr();
+        System.out.printf("rkey: %d lkey: %d handle:%d\n",wholeAddressSpace.getRkey(),wholeAddressSpace.getLkey(),wholeAddressSpace.getHandle());
+
+//        this.registeredReceiveMemory = registerMemory(receiveBuffer).execute().getMr(); // register the send buffer
+//
+
+//        this.registeredSendMemory = registerMemory(sendBuffer).execute().getMr(); // register the send buffer
+//
+//        this.availableFreeReceiveBuffers = ByteBuffer.allocateDirect(2); // TODO: assumption of less receive buffers
+//        this.availableFreeReceiveBuffersRegisteredMemory = registerMemory(availableFreeReceiveBuffers).execute()
+//                .getMr();
     }
-
-    public ByteBuffer getreceiveBuffer() {
+//
+    public ByteBuffer getReceiveBuffer() {
         return this.receiveBuffer;
     }
 
     public ByteBuffer getSendBuffer() {
         return this.sendBuffer;
     }
-
-    public IbvMr getRegisteredReceiveMemory() {
-        return registeredReceiveMemory;
+//
+    public IbvMr getMR() {
+        return wholeAddressSpace;
     }
-
-    public IbvMr getRegisteredSendMemory() {
-        return registeredSendMemory;
-    }
+//
+//    public IbvMr getRegisteredSendMemory() {
+//        return registeredSendMemory;
+//    }
 
     public ArrayBlockingQueue<IbvWC> getWcEvents() {
         synchronized (this) {
@@ -84,13 +91,13 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
         }
     }
 
-    public ByteBuffer getAvailableFreeReceiveBuffers() {
-        return availableFreeReceiveBuffers;
-    }
-
-    public IbvMr getAvailableFreeReceiveBuffersRegisteredMemory() {
-        return availableFreeReceiveBuffersRegisteredMemory;
-    }
+//    public ByteBuffer getAvailableFreeReceiveBuffers() {
+//        return availableFreeReceiveBuffers;
+//    }
+//
+//    public IbvMr getAvailableFreeReceiveBuffersRegisteredMemory() {
+//        return availableFreeReceiveBuffersRegisteredMemory;
+//    }
 
 //    public void write(RdmaMessage msg) {
 //        // TODO (venkat):imp : pass buffer allocator

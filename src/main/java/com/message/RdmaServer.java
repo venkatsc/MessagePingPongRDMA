@@ -48,7 +48,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
     public void run() throws Exception {
         //create a EndpointGroup. The RdmaActiveEndpointGroup contains CQ processing and delivers CQ event to the
         // endpoint.dispatchCqEvent() method.
-        endpointGroup = new RdmaActiveEndpointGroup<RdmaShuffleServerEndpoint>(1000, true, 128, 4, 128);
+        endpointGroup = new RdmaActiveEndpointGroup<RdmaShuffleServerEndpoint>(1000, true, 128, 4, 128,false);
         endpointGroup.init(this);
         //create a server endpoint
         serverEndpoint = endpointGroup.createServerEndpoint();
@@ -87,7 +87,10 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
 //        }
             RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId);
             while (i <= 50) {
+                long start = System.nanoTime();
                 IbvWC wc = clientEndpoint.getWcEvents().take();
+                long end = System.nanoTime();
+                System.out.println("Server Latency to pop-element out of queue "+ (end-start));
                 if (IbvWC.IbvWcOpcode.valueOf(wc.getOpcode()) == IbvWC.IbvWcOpcode.IBV_WC_RECV) {
                     i++;
                     if (wc.getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {

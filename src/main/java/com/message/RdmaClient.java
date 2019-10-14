@@ -4,6 +4,8 @@ import com.ibm.disni.RdmaActiveEndpointGroup;
 import com.ibm.disni.RdmaEndpointFactory;
 import com.ibm.disni.verbs.IbvWC;
 import com.ibm.disni.verbs.RdmaCmId;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -95,6 +97,8 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
     public static void main(String[] args) throws Exception {
         CmdLineCommon cmdLine = new CmdLineCommon("RdmaClient");
         try {
+            BasicConfigurator.configure();
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
             cmdLine.parse(args);
         } catch (org.apache.commons.cli.ParseException e) {
             cmdLine.printHelp();

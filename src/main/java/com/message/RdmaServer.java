@@ -7,6 +7,8 @@ import com.ibm.disni.verbs.IbvContext;
 import com.ibm.disni.verbs.IbvWC;
 import com.ibm.disni.verbs.RdmaCmId;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -128,6 +130,9 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
     public static void main(String[] args) throws Exception {
         CmdLineCommon cmdLine = new CmdLineCommon("RdmaServer");
         try {
+            BasicConfigurator.configure();
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
+            cmdLine.parse(args);
             cmdLine.parse(args);
         } catch (ParseException e) {
             cmdLine.printHelp();

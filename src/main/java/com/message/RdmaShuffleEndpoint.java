@@ -57,7 +57,7 @@ public class RdmaShuffleEndpoint extends RdmaActiveEndpoint {
         this.sendBuffer1 = ByteBuffer.allocateDirect(bufferSize);
         this.receiveBuffer = ByteBuffer.allocateDirect(2*bufferSize); // allocate buffer
         // Register on demand paging
-        wholeAddressSpace = registerMemory().execute().getMr();
+        wholeAddressSpace = super.getProcessMR();
 
         System.out.printf("rkey: %d lkey: %d handle:%d\n",wholeAddressSpace.getRkey(),wholeAddressSpace.getLkey(),wholeAddressSpace.getHandle());
 

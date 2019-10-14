@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
+public class RdmaShuffleEndpoint extends RdmaActiveEndpoint {
 //    private static final Logger LOG = LoggerFactory.getLogger(RdmaShuffleClientEndpoint.class);
 
     private int bufferSize; // Todo: set default buffer size
@@ -24,6 +24,7 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
 //    private IbvMr registeredReceiveMemory; // Registered memory for the above buffer
 //
     private ByteBuffer sendBuffer;
+    private ByteBuffer sendBuffer1;
 //    private IbvMr registeredSendMemory;
 //
 //    private ByteBuffer availableFreeReceiveBuffers;
@@ -35,7 +36,7 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
     private ArrayBlockingQueue<IbvWC> wcEvents = new ArrayBlockingQueue<IbvWC>(1000);
     private static int workRequestId;
 
-    public RdmaShuffleClientEndpoint(RdmaActiveEndpointGroup<? extends RdmaActiveEndpoint> group, RdmaCmId idPriv,
+    public RdmaShuffleEndpoint(RdmaActiveEndpointGroup<? extends RdmaActiveEndpoint> group, RdmaCmId idPriv,
                                      boolean serverSide, int bufferSize)
             throws IOException {
         super(group, idPriv, serverSide);
@@ -53,7 +54,8 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
     public void init() throws IOException {
         super.init();
         this.sendBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
-        this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
+        this.sendBuffer1 = ByteBuffer.allocateDirect(bufferSize);
+        this.receiveBuffer = ByteBuffer.allocateDirect(2*bufferSize); // allocate buffer
         // Register on demand paging
         wholeAddressSpace = registerMemory().execute().getMr();
 
@@ -74,6 +76,10 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
     }
 
     public ByteBuffer getSendBuffer() {
+        return this.sendBuffer;
+    }
+
+    public ByteBuffer getSendBuffer1() {
         return this.sendBuffer;
     }
 //

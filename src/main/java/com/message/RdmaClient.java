@@ -10,18 +10,18 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
-public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint> {
+public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleEndpoint> {
     //    private static final Logger LOG = LoggerFactory.getLogger(RdmaClient.class);
-    RdmaActiveEndpointGroup<RdmaShuffleClientEndpoint> endpointGroup;
+    RdmaActiveEndpointGroup<RdmaShuffleEndpoint> endpointGroup;
     private final RdmaConfig rdmaConfig;
     private int workRequestId = 1;
 //    private NettyBufferPool bufferPool;
 
-    public RdmaShuffleClientEndpoint getEndpoint() {
+    public RdmaShuffleEndpoint getEndpoint() {
         return endpoint;
     }
 
-    private RdmaShuffleClientEndpoint endpoint;
+    private RdmaShuffleEndpoint endpoint;
 //    private PartitionRequestClientHandler clientHandler;
 
     public RdmaClient(RdmaConfig rdmaConfig) {
@@ -30,8 +30,8 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
 //        this.bufferPool=bufferPool;
     }
 
-    public RdmaShuffleClientEndpoint createEndpoint(RdmaCmId idPriv, boolean serverSide) throws IOException {
-        return new RdmaShuffleClientEndpoint(endpointGroup, idPriv, serverSide, 4096);
+    public RdmaShuffleEndpoint createEndpoint(RdmaCmId idPriv, boolean serverSide) throws IOException {
+        return new RdmaShuffleEndpoint(endpointGroup, idPriv, serverSide, 4096);
     }
 
     public void run() throws Exception {
@@ -40,7 +40,7 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
         System.out.println("Starting client");
         //connect to the server
 //		InetAddress ipAddress = InetAddress.getByName(host);
-        endpointGroup = new RdmaActiveEndpointGroup<RdmaShuffleClientEndpoint>(1000, true, 128, 4, 128);
+        endpointGroup = new RdmaActiveEndpointGroup<RdmaShuffleEndpoint>(1000, true, 128, 4, 128);
         endpointGroup.init(this);
         //we have passed our own endpoint factory to the group, therefore new endpoints will be of type
         // CustomClientEndpoint
@@ -59,7 +59,10 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
         request.writeTo(endpoint.getSendBuffer());
         RdmaSendReceiveUtil.postSendReq(endpoint, ++workRequestId);
         while (i <= 50) {
+            long start = System.nanoTime();
             IbvWC wc = endpoint.getWcEvents().take();
+            long end = System.nanoTime();
+            System.out.println("Client Latency to pop-element out of queue "+ (end-start));
             if (IbvWC.IbvWcOpcode.valueOf( wc.getOpcode()) == IbvWC.IbvWcOpcode.IBV_WC_RECV){
                 i++;
                 if (wc.getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()){

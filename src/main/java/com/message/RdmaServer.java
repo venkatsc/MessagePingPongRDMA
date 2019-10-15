@@ -39,10 +39,18 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
 
 
     private void registerMemoryRegions(RdmaServerEndpoint<RdmaShuffleServerEndpoint> endpoint) throws IOException {
+        long start = System.nanoTime();
         this.sendBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
+        for (int i = 0; i < rdmaConfig.getThrowAwayBufferCount(); i++) {
+            ByteBuffer throwAway = ByteBuffer.allocateDirect(1 * 1024 * 1024);
+            endpoint.registerMemory(throwAway).execute().getMr();
+        }
         this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize);
         this.registeredReceiveMemory = endpoint.registerMemory(receiveBuffer).execute().getMr();
         this.registeredSendMemory = endpoint.registerMemory(sendBuffer).execute().getMr();
+        long end = System.nanoTime();
+        System.out.println("Server: Memory resgistration time for " + rdmaConfig.getThrowAwayBufferCount() + "MB (in seconds): " + ((end
+                - start) / (1000.0*1000*1000)));;
     }
 //private PartitionRequestServerHandler serverHandler;
 //private NettyBufferPool bufferPool;
@@ -82,8 +90,8 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
             e.printStackTrace();
         }
         System.out.println("SimpleServer::servers bound to address " + address.toString());
-        int conns=0;
-        while(conns<2) {
+        int conns = 0;
+        while (conns < 2) {
             //we can accept new connections
             clientEndpoint = serverEndpoint.accept();
             clientEndpoint.setReceiveBuffer(receiveBuffer);
@@ -91,7 +99,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
             clientEndpoint.setRegisteredReceiveMemory(registeredReceiveMemory);
             clientEndpoint.setRegisteredSendMemory(registeredSendMemory);
             conns++;
-            System.out.println("\n\n\nAccepted connection "+conns+"\n\n\n");
+            System.out.println("\n\n\nAccepted connection " + conns + "\n\n\n");
             //we have previously passed our own endpoint factory to the group, therefore new endpoints will be of type
             // CustomServerEndpoint
             int i = 0;
@@ -107,7 +115,8 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                         System.out.println("Receive posting failed. reposting new receive request");
 //                        RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId);
                     } else { // first receive succeeded. Read the data and repost the next message
-                        RdmaMessage.PartitionRequest clientRequest = (RdmaMessage.PartitionRequest) RdmaMessage.PartitionRequest.readFrom(clientEndpoint.getReceiveBuffer());
+                        RdmaMessage.PartitionRequest clientRequest = (RdmaMessage.PartitionRequest) RdmaMessage
+                                .PartitionRequest.readFrom(clientEndpoint.getReceiveBuffer());
 
                         System.out.println("client requested partition id: " + clientRequest.getPartitionId());
                         clientEndpoint.getReceiveBuffer().clear();
@@ -147,7 +156,8 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
             cmdLine.printHelp();
             System.exit(-1);
         }
-        RdmaConfig rdmaConfig = new RdmaConfig(InetAddress.getByName(cmdLine.getIp()), cmdLine.getPort());
+        RdmaConfig rdmaConfig = new RdmaConfig(InetAddress.getByName(cmdLine.getIp()), cmdLine.getPort(), cmdLine
+                .getThrowAwayBufferCount());
         RdmaServer server = new RdmaServer(rdmaConfig); //TODO (venkat): it should not
         // be null
         server.run();
@@ -155,7 +165,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
 
     public void shutdown() {
         try {
-			clientEndpoint.close();
+            clientEndpoint.close();
 //			System.out.println("client endpoint closed");
             serverEndpoint.close();
             System.out.println("server endpoint closed");

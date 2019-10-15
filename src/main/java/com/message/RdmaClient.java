@@ -40,12 +40,19 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
     }
 
     private void registerMemoryRegions() throws IOException {
+        long start = System.nanoTime();
         this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
         this.registeredReceiveMemory = endpoint.registerMemory(receiveBuffer).execute().getMr(); // register the send
         // buffer
-
+        for(int i=0;i<rdmaConfig.getThrowAwayBufferCount();i++){
+            ByteBuffer throwAway = ByteBuffer.allocateDirect(1*1024*1024);
+            endpoint.registerMemory(throwAway).execute().getMr();
+        }
         this.sendBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
         this.registeredSendMemory = endpoint.registerMemory(sendBuffer).execute().getMr();
+        long end = System.nanoTime();
+        System.out.println("Client: Memory resgistration time for " + rdmaConfig.getThrowAwayBufferCount() + "MB (in seconds): " + (end
+                - start) / (1000.0*1000*1000));
     }
 
     public RdmaShuffleClientEndpoint createEndpoint(RdmaCmId idPriv, boolean serverSide) throws IOException {
@@ -142,7 +149,7 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
             cmdLine.printHelp();
             System.exit(-1);
         }
-        RdmaConfig rdmaConfig = new RdmaConfig(InetAddress.getByName(cmdLine.getIp()), cmdLine.getPort());
+        RdmaConfig rdmaConfig = new RdmaConfig(InetAddress.getByName(cmdLine.getIp()), cmdLine.getPort(),cmdLine.getThrowAwayBufferCount());
         RdmaClient client = new RdmaClient(rdmaConfig); // TODO: need to pass client partition handler
         client.run();
     }

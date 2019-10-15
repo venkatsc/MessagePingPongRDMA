@@ -6,6 +6,7 @@ import java.net.InetAddress;
 public class RdmaConfig {
     private final InetAddress serverAddress;
     private int serverPort;
+    private int throwAwayBufferCount;
 
     private int memorySegmentSize;
     private int cqSize;
@@ -33,9 +34,10 @@ public class RdmaConfig {
     // TODO: remove (only for stand-alone running of server
     public RdmaConfig(
             InetAddress serverAddress,
-            int serverPort) {
+            int serverPort, int tbc) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
+        this.throwAwayBufferCount= tbc;
     }
 
     public InetAddress getServerAddress() {
@@ -52,6 +54,10 @@ public class RdmaConfig {
 
     public int getCqSize() {
         return cqSize;
+    }
+
+    public int getThrowAwayBufferCount() {
+        return throwAwayBufferCount;
     }
 
 //    public Configuration getConfig() {

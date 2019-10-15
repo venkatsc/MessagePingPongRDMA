@@ -16,6 +16,8 @@ public class CmdLineCommon {
     private static final String PORT_KEY = "p";
     private int port;
     private static final int DEFAULT_PORT = 1919;
+    private static final String THROWAWAY_BUFFERS="b";
+    private int tb=0;
 
     private final String appName;
 
@@ -27,9 +29,10 @@ public class CmdLineCommon {
         this.options = new Options();
         Option address = Option.builder(IP_KEY).required().desc("ip address").hasArg().required().build();
         Option port = Option.builder(PORT_KEY).desc("port").hasArg().type(Number.class).build();
-
+        Option buffers = Option.builder(THROWAWAY_BUFFERS).desc("throw away buffers-- for MR benchmark").hasArg().type(Number.class).build();
         options.addOption(address);
         options.addOption(port);
+        options.addOption(buffers);
     }
 
     protected Options addOption(Option option) {
@@ -48,6 +51,10 @@ public class CmdLineCommon {
         } else {
             port = DEFAULT_PORT;
         }
+
+        if (line.hasOption(THROWAWAY_BUFFERS)) {
+            tb = ((Number) line.getParsedOptionValue(THROWAWAY_BUFFERS)).intValue();
+        }
     }
 
     public void parse(String[] args) throws ParseException {
@@ -62,5 +69,9 @@ public class CmdLineCommon {
 
     public int getPort() {
         return port;
+    }
+
+    public int getThrowAwayBufferCount(){
+        return tb;
     }
 }

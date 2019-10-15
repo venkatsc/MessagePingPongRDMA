@@ -123,7 +123,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleEndpoint> {
         }
         //close everything
 //        System.out.println("group closed");
-//        this.shutdown();
+        this.shutdown();
 //		System.exit(0);
     }
 

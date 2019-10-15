@@ -42,7 +42,7 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
         System.out.println("Starting client");
         //connect to the server
 //		InetAddress ipAddress = InetAddress.getByName(host);
-        endpointGroup = new RdmaActiveEndpointGroup<RdmaShuffleClientEndpoint>(1000, true, 128, 4, 128,false);
+        endpointGroup = new RdmaActiveEndpointGroup<RdmaShuffleClientEndpoint>(1000, true, 128, 4, 128);
         endpointGroup.init(this);
         //we have passed our own endpoint factory to the group, therefore new endpoints will be of type
         // CustomClientEndpoint

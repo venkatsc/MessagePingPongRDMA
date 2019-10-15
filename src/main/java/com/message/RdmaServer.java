@@ -91,30 +91,16 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
             clientEndpoint.setRegisteredReceiveMemory(registeredReceiveMemory);
             clientEndpoint.setRegisteredSendMemory(registeredSendMemory);
             conns++;
+            System.out.println("\n\n\nAccepted connection "+conns+"\n\n\n");
             //we have previously passed our own endpoint factory to the group, therefore new endpoints will be of type
             // CustomServerEndpoint
-//		System.out.println("SimpleServer::client connection accepted");
-//
-//        RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId);
             int i = 0;
-            String message;
-
-//        while (i <= 50) {
-//            i++;
-//            RdmaMessage.PartitionRequest request = (RdmaMessage.PartitionRequest) clientEndpoint.read();
-//            System.out.println(" Partition requested "+request.getPartitionId());
-//            RdmaMessage.PartitionResponse response = new RdmaMessage.PartitionResponse(i);
-//            clientEndpoint.write(response);
-//            if (request.getPartitionId() == 50) {
-//                break;
-//            }
-//        }
             RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId);
-            while (i <= 50) {
-                long start = System.nanoTime();
+            while (i < 50) {
+//                long start = System.nanoTime();
                 IbvWC wc = clientEndpoint.getWcEvents().take();
-                long end = System.nanoTime();
-                System.out.println("Server Latency to pop-element out of queue "+ (end-start));
+//                long end = System.nanoTime();
+//                System.out.println("Server Latency to pop-element out of queue "+ (end-start));
                 if (IbvWC.IbvWcOpcode.valueOf(wc.getOpcode()) == IbvWC.IbvWcOpcode.IBV_WC_RECV) {
                     i++;
                     if (wc.getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {
@@ -142,10 +128,11 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                     System.out.println("failed to match any condition " + wc.getOpcode());
                 }
             }
+            clientEndpoint.close();
         }
         //close everything
 //        System.out.println("group closed");
-//        this.shutdown();
+        this.shutdown();
 //		System.exit(0);
     }
 

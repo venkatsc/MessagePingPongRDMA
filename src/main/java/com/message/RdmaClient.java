@@ -68,6 +68,7 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
             InetSocketAddress address = new InetSocketAddress(rdmaConfig.getServerAddress(), rdmaConfig.getServerPort
                     ());
             endpoint.connect(address, 1000);
+            System.out.println("\n\n\nClient connection "+con);
             if (con == 0) {
                 System.out.println("Registering memory");
                 long startTime = System.nanoTime();
@@ -89,11 +90,11 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
             RdmaMessage.PartitionRequest request = new RdmaMessage.PartitionRequest(i);
             request.writeTo(endpoint.getSendBuffer());
             RdmaSendReceiveUtil.postSendReq(endpoint, ++workRequestId);
-            while (i <= 50) {
-                long start = System.nanoTime();
+            while (i < 50) {
+//                long start = System.nanoTime();
                 IbvWC wc = endpoint.getWcEvents().take();
-                long end = System.nanoTime();
-                System.out.println("Client Latency to pop-element out of queue " + (end - start));
+//                long end = System.nanoTime();
+//                System.out.println("Client Latency to pop-element out of queue " + (end - start));
                 if (IbvWC.IbvWcOpcode.valueOf(wc.getOpcode()) == IbvWC.IbvWcOpcode.IBV_WC_RECV) {
                     i++;
                     if (wc.getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {
@@ -104,7 +105,11 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
                                 .PartitionResponse.readFrom(endpoint.getReceiveBuffer());
                         System.out.println("Response partition id: " + response.getPartitionId());
                         endpoint.getReceiveBuffer().clear();
+                        if (i==50) {
+                            continue; // we just want to post requests until 49
+                        }
                         RdmaSendReceiveUtil.postReceiveReq(endpoint, ++workRequestId);
+
                         RdmaMessage.PartitionRequest request1 = new RdmaMessage.PartitionRequest(i);
                         request1.writeTo(endpoint.getSendBuffer());
                         RdmaSendReceiveUtil.postSendReq(endpoint, ++workRequestId);

@@ -71,7 +71,10 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
         //create a server endpoint
         serverEndpoint = endpointGroup.createServerEndpoint();
 
+<<<<<<< Updated upstream
+=======
 
+>>>>>>> Stashed changes
         //we can call bind on a server endpoint, just like we do with sockets
 //		InetAddress ipAddress = InetAddress.getByName(host);
         address = new InetSocketAddress(rdmaConfig.getServerAddress(), rdmaConfig.getServerPort());

@@ -62,17 +62,17 @@ public class RdmaShuffleServerEndpoint extends RdmaActiveEndpoint {
 
     public void init() throws IOException {
         super.init();
-        this.sendBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
-        this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize);
-        this.registeredReceiveMemory = registerMemory(receiveBuffer).execute().getMr();
-        this.registeredSendMemory = registerMemory(sendBuffer).execute().getMr(); // register the send buffer
-        this.availableFreeReceiveBuffers = ByteBuffer.allocateDirect(2); // TODO: assumption of less receive buffers
-        this.availableFreeReceiveBuffersRegisteredMemory = registerMemory(availableFreeReceiveBuffers).execute()
-                .getMr();
-        this.availableFreeReceiveBuffersNotification = ByteBuffer.allocateDirect(2); // TODO: assumption of less
-        // receive buffers
-        this.availableFreeReceiveBuffersNotificationRegisteredMemory = registerMemory
-                (availableFreeReceiveBuffersNotification).execute().getMr();
+//        this.sendBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
+//        this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize);
+//        this.registeredReceiveMemory = registerMemory(receiveBuffer).execute().getMr();
+//        this.registeredSendMemory = registerMemory(sendBuffer).execute().getMr(); // register the send buffer
+//        this.availableFreeReceiveBuffers = ByteBuffer.allocateDirect(2); // TODO: assumption of less receive buffers
+//        this.availableFreeReceiveBuffersRegisteredMemory = registerMemory(availableFreeReceiveBuffers).execute()
+//                .getMr();
+//        this.availableFreeReceiveBuffersNotification = ByteBuffer.allocateDirect(2); // TODO: assumption of less
+//        // receive buffers
+//        this.availableFreeReceiveBuffersNotificationRegisteredMemory = registerMemory
+//                (availableFreeReceiveBuffersNotification).execute().getMr();
     }
 
     public ByteBuffer getSendBuffer() {
@@ -95,6 +95,22 @@ public class RdmaShuffleServerEndpoint extends RdmaActiveEndpoint {
         synchronized (this) {
             return wcEvents;
         }
+    }
+
+    public void setSendBuffer(ByteBuffer sendBuffer) {
+        this.sendBuffer = sendBuffer;
+    }
+
+    public void setReceiveBuffer(ByteBuffer receiveBuffer) {
+        this.receiveBuffer = receiveBuffer;
+    }
+
+    public void setRegisteredReceiveMemory(IbvMr registeredReceiveMemory) {
+        this.registeredReceiveMemory= registeredReceiveMemory;
+    }
+
+    public void setRegisteredSendMemory(IbvMr registeredSendMemory) {
+        this.registeredSendMemory=registeredSendMemory;
     }
 
     public ByteBuffer getAvailableFreeReceiveBuffers() {

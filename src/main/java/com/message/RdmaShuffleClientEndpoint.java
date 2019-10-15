@@ -15,10 +15,6 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
 
     private int bufferSize; // Todo: set default buffer size
 
-    public ByteBuffer getReceiveBuffer() {
-        return receiveBuffer;
-    }
-
     private ByteBuffer receiveBuffer; // Todo: add buffer manager with multiple buffers
     private IbvMr registeredReceiveMemory; // Registered memory for the above buffer
 
@@ -51,23 +47,41 @@ public class RdmaShuffleClientEndpoint extends RdmaActiveEndpoint {
 
     public void init() throws IOException {
         super.init();
-        this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
-        this.registeredReceiveMemory = registerMemory(receiveBuffer).execute().getMr(); // register the send buffer
-
-        this.sendBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
-        this.registeredSendMemory = registerMemory(sendBuffer).execute().getMr(); // register the send buffer
-
-        this.availableFreeReceiveBuffers = ByteBuffer.allocateDirect(2); // TODO: assumption of less receive buffers
-        this.availableFreeReceiveBuffersRegisteredMemory = registerMemory(availableFreeReceiveBuffers).execute()
-                .getMr();
+//        this.receiveBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
+//        this.registeredReceiveMemory = registerMemory(receiveBuffer).execute().getMr(); // register the send buffer
+//
+//        this.sendBuffer = ByteBuffer.allocateDirect(bufferSize); // allocate buffer
+//        this.registeredSendMemory = registerMemory(sendBuffer).execute().getMr(); // register the send buffer
+//
+//        this.availableFreeReceiveBuffers = ByteBuffer.allocateDirect(2); // TODO: assumption of less receive buffers
+//        this.availableFreeReceiveBuffersRegisteredMemory = registerMemory(availableFreeReceiveBuffers).execute()
+//                .getMr();
     }
 
-    public ByteBuffer getreceiveBuffer() {
-        return this.receiveBuffer;
+
+    public void setSendBuffer(ByteBuffer sendBuffer) {
+        this.sendBuffer = sendBuffer;
+    }
+
+    public void setReceiveBuffer(ByteBuffer receiveBuffer) {
+        this.receiveBuffer = receiveBuffer;
+    }
+
+
+
+    public void setRegisteredReceiveMemory(IbvMr registeredReceiveMemory) {
+        this.registeredReceiveMemory= registeredReceiveMemory;
+    }
+
+    public void setRegisteredSendMemory(IbvMr registeredSendMemory) {
+        this.registeredSendMemory=registeredSendMemory;
     }
 
     public ByteBuffer getSendBuffer() {
         return this.sendBuffer;
+    }
+    public ByteBuffer getReceiveBuffer() {
+        return receiveBuffer;
     }
 
     public IbvMr getRegisteredReceiveMemory() {

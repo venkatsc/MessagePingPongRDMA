@@ -13,7 +13,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
-public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint>, Runnable{
+public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint>, Runnable {
     //    private static final Logger LOG = LoggerFactory.getLogger(RdmaClient.class);
     private int bufferSize = 100;
     RdmaActiveEndpointGroup<RdmaShuffleClientEndpoint> endpointGroup;
@@ -37,14 +37,16 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
 
     public RdmaClient(RdmaConfig rdmaConfig, BufferProvider bufferProvider) {
         this.rdmaConfig = rdmaConfig;
-        this.bufferProvider=bufferProvider;
+        this.bufferProvider = bufferProvider;
 //        this.clientHandler = clientHandler;
 //        this.bufferPool=bufferPool;
     }
 
-    private void initializeBuffers(){
-        this.sendBuffer=bufferProvider.getClientSendBuffer();
-        this.receiveBuffer=bufferProvider.getClientReceiveBuffer();
+    private void initializeBuffers() {
+        this.sendBuffer = bufferProvider.getClientSendBuffer();
+        this.receiveBuffer = bufferProvider.getClientReceiveBuffer();
+        this.registeredSendMemory = bufferProvider.getRegisteredClientSendMemory();
+        this.registeredReceiveMemory = bufferProvider.getRegisteredClientReceiveMemory();
     }
 
     private void registerMemoryRegions() throws IOException {
@@ -52,8 +54,8 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
         this.receiveBuffer = bufferProvider.getClientReceiveBuffer(); // allocate buffer
         this.registeredReceiveMemory = endpoint.registerMemory(receiveBuffer).execute().getMr(); // register the send
         // buffer
-        for(int i=0;i<rdmaConfig.getThrowAwayBufferCount();i++){
-            ByteBuffer throwAway = ByteBuffer.allocateDirect(1*1024*1024);
+        for (int i = 0; i < rdmaConfig.getThrowAwayBufferCount(); i++) {
+            ByteBuffer throwAway = ByteBuffer.allocateDirect(1 * 1024 * 1024);
             endpoint.registerMemory(throwAway).execute().getMr();
         }
         this.sendBuffer = bufferProvider.getClientSendBuffer(); // allocate buffer
@@ -62,15 +64,16 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
         endpoint.registerMemory(bufferProvider.getServerReceiveBuffer()).execute().getMr();
         endpoint.registerMemory(bufferProvider.getServerSendBuffer()).execute().getMr();
         long end = System.nanoTime();
-        System.out.println("Client: Memory resgistration time for " + rdmaConfig.getThrowAwayBufferCount() + "MB (in seconds): " + (end
-                - start) / (1000.0*1000*1000));
+        System.out.println("Client: Memory resgistration time for " + rdmaConfig.getThrowAwayBufferCount() + "MB (in " +
+                "seconds): " + (end
+                - start) / (1000.0 * 1000 * 1000));
     }
 
     public RdmaShuffleClientEndpoint createEndpoint(RdmaCmId idPriv, boolean serverSide) throws IOException {
         return new RdmaShuffleClientEndpoint(endpointGroup, idPriv, serverSide, 100);
     }
 
-    public void run()  {
+    public void run() {
         //create a EndpointGroup. The RdmaActiveEndpointGroup contains CQ processing and delivers CQ event to the
         // endpoint.dispatchCqEvent() method.
         try {
@@ -84,22 +87,22 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
             //let's create a new client endpoint
             for (int con = 0; con < 2; con++) {
                 endpoint = endpointGroup.createEndpoint();
-                InetSocketAddress address = new InetSocketAddress(rdmaConfig.getServerAddress(), rdmaConfig.getServerPort
-
-                        ());
+                InetSocketAddress address = new InetSocketAddress(rdmaConfig.getServerAddress(), rdmaConfig
+                        .getServerPort());
                 endpoint.connect(address, 1000);
                 Thread.sleep(1000);
                 System.out.println("\n\n\nClient connection " + con);
-                // No need of registration on client connection in same JVM, it seems the PD is same for both server and client inside same JVM
+                // No need of registration on client connection in same JVM, it seems the PD is same for both server
+                // and client inside same JVM
                 // Disable it during next iteration of the code
-                if (con == 0) {
-                    System.out.println("Registering memory");
-                    long startTime = System.nanoTime();
-                    registerMemoryRegions();
-                    long endTime = System.nanoTime();
-                    System.out.println("Latency for memory registration " + (endTime - startTime));
-                }
-//                initializeBuffers();
+//                if (con == 0) {
+//                    System.out.println("Registering memory");
+//                    long startTime = System.nanoTime();
+//                    registerMemoryRegions();
+//                    long endTime = System.nanoTime();
+//                    System.out.println("Latency for memory registration " + (endTime - startTime));
+//                }
+                initializeBuffers();
                 endpoint.setReceiveBuffer(receiveBuffer);
                 endpoint.setSendBuffer(sendBuffer);
                 endpoint.setRegisteredReceiveMemory(registeredReceiveMemory);
@@ -152,7 +155,7 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
                 endpoint.close();
             }
             this.shutdown();
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 //		System.exit(0);
@@ -168,9 +171,10 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
             cmdLine.printHelp();
             System.exit(-1);
         }
-        BufferProvider bufferProvider= new BufferProvider();
-        RdmaConfig rdmaConfig = new RdmaConfig(InetAddress.getByName(cmdLine.getIp()), cmdLine.getPort(),cmdLine.getThrowAwayBufferCount());
-        RdmaClient client = new RdmaClient(rdmaConfig,bufferProvider); // TODO: need to pass client partition handler
+        BufferProvider bufferProvider = new BufferProvider();
+        RdmaConfig rdmaConfig = new RdmaConfig(InetAddress.getByName(cmdLine.getIp()), cmdLine.getPort(), cmdLine
+                .getThrowAwayBufferCount());
+        RdmaClient client = new RdmaClient(rdmaConfig, bufferProvider); // TODO: need to pass client partition handler
         Thread t = new Thread(client);
         t.start();
     }

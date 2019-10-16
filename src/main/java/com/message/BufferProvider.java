@@ -12,6 +12,25 @@ public class BufferProvider {
     private ByteBuffer ServerSendBuffer = ByteBuffer.allocateDirect(bufferSize);
     private ByteBuffer ServerReceiveBuffer = ByteBuffer.allocateDirect(bufferSize);
 
+    private IbvMr registeredClientReceiveMemory; // Registered memory for the above buffer
+    private IbvMr registeredClientSendMemory;
+
+    public IbvMr getRegisteredClientReceiveMemory() {
+        return registeredClientReceiveMemory;
+    }
+
+    public void setRegisteredClientReceiveMemory(IbvMr registeredClientReceiveMemory) {
+        this.registeredClientReceiveMemory = registeredClientReceiveMemory;
+    }
+
+    public IbvMr getRegisteredClientSendMemory() {
+        return registeredClientSendMemory;
+    }
+
+    public void setRegisteredClientSendMemory(IbvMr registeredClientSendMemory) {
+        this.registeredClientSendMemory = registeredClientSendMemory;
+    }
+
     public ByteBuffer getClientSendBuffer() {
         return ClientSendBuffer;
     }

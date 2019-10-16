@@ -3,9 +3,7 @@ package com.message;
 import com.ibm.disni.RdmaActiveEndpointGroup;
 import com.ibm.disni.RdmaEndpointFactory;
 import com.ibm.disni.RdmaServerEndpoint;
-import com.ibm.disni.verbs.IbvContext;
 import com.ibm.disni.verbs.IbvMr;
-import com.ibm.disni.verbs.IbvPd;
 import com.ibm.disni.verbs.IbvWC;
 import com.ibm.disni.verbs.RdmaCmId;
 import org.apache.commons.cli.ParseException;
@@ -50,8 +48,8 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
         this.receiveBuffer = bufferProvider.getServerReceiveBuffer();
         this.registeredReceiveMemory = endpoint.registerMemory(receiveBuffer).execute().getMr();
         this.registeredSendMemory = endpoint.registerMemory(sendBuffer).execute().getMr();
-        endpoint.registerMemory(bufferProvider.getClientReceiveBuffer()).execute().getMr();
-        endpoint.registerMemory(bufferProvider.getClientSendBuffer()).execute().getMr();
+        bufferProvider.setRegisteredClientReceiveMemory(endpoint.registerMemory(bufferProvider.getClientReceiveBuffer()).execute().getMr());
+        bufferProvider.setRegisteredClientSendMemory(endpoint.registerMemory(bufferProvider.getClientSendBuffer()).execute().getMr());
         long end = System.nanoTime();
         System.out.println("Server: Memory resgistration time for " + rdmaConfig.getThrowAwayBufferCount() + "MB (in seconds): " + ((end
                 - start) / (1000.0*1000*1000)));;

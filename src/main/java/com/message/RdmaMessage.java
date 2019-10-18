@@ -8,9 +8,10 @@ public abstract class RdmaMessage {
     abstract void writeTo(ByteBuffer buffer) throws Exception;
 //    abstract void readFrom(ByteBuffer buffer) throws Exception;
 //    abstract int messageLength();
-
+     public static final int MAGIC_NUMBER = 0xBADC0FFE;
     static class PartitionRequest extends RdmaMessage {
         public final static int MESSAGE_LENGTH = /*ID*/ 1 + 4 /*partitionId*/;
+
         private int partitionId;
         private static final byte ID = 2;
 
@@ -27,6 +28,8 @@ public abstract class RdmaMessage {
                 throw new Exception("Insufficient buffer capacity to write. Actual " + buffer.capacity() + " required" +
                         " " + PartitionRequest.MESSAGE_LENGTH);
             }
+            buffer.putInt(5);
+            buffer.putInt(MAGIC_NUMBER);
             buffer.put(ID);
             buffer.putInt(partitionId);
         }
@@ -37,9 +40,16 @@ public abstract class RdmaMessage {
                         "" + PartitionRequest.MESSAGE_LENGTH);
             }
 //            System.out.println("Request message type id "+(int)buffer.get());
-            buffer.get();
+            validateMagice(buffer.getInt());
+            buffer.get(); //discard ID
             PartitionRequest request = new PartitionRequest(buffer.getInt());
             return request;
+        }
+    }
+
+    private static void validateMagice(int magic) throws Exception {
+        if (magic!=RdmaMessage.MAGIC_NUMBER){
+            throw new Exception("Invalid magic number "+magic);
         }
     }
 
@@ -63,6 +73,8 @@ public abstract class RdmaMessage {
                 throw new Exception("Insufficient buffer capacity to write. Actual " + buffer.capacity() + " required" +
                         " " + PartitionResponse.MESSAGE_LENGTH);
             }
+            buffer.putInt(5);
+            buffer.putInt(MAGIC_NUMBER);
             buffer.put(ID);
             buffer.putInt(partitionId);
 //            buffer.asCharBuffer().put(message);
@@ -73,6 +85,7 @@ public abstract class RdmaMessage {
                 throw new Exception("Insufficient buffer capacity to read. Actual " + buffer.capacity() + " required " +
                         "" + PartitionResponse.MESSAGE_LENGTH);
             }
+            validateMagice(buffer.getInt());
             buffer.get();
 //            System.out.println("Response message id "+(int)buffer.get());
             PartitionResponse response = new PartitionResponse(buffer.getInt());

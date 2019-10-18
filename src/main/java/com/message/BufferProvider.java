@@ -5,7 +5,7 @@ import com.ibm.disni.verbs.IbvMr;
 import java.nio.ByteBuffer;
 
 public class BufferProvider {
-    private int bufferSize = 10;
+    private int bufferSize = 25;
     private ByteBuffer ClientSendBuffer = ByteBuffer.allocateDirect(bufferSize);
     private ByteBuffer ClientReceiveBuffer = ByteBuffer.allocateDirect(bufferSize);
 

@@ -18,8 +18,9 @@ public class RdmaSendReceiveUtil {
 //            System.out.println("posting wr_id " + workReqId);
             LinkedList<IbvSge> sges = new LinkedList<IbvSge>();
             IbvSge sendSGE = new IbvSge();
-            sendSGE.setAddr(clientEndpoint.getRegisteredSendMemory().getAddr());
-            sendSGE.setLength(clientEndpoint.getRegisteredSendMemory().getLength());
+            // let us dicard dummy value..first one should be the magic in the
+            sendSGE.setAddr(clientEndpoint.getRegisteredSendMemory().getAddr()+4);
+            sendSGE.setLength(clientEndpoint.getRegisteredSendMemory().getLength()-4);
             sendSGE.setLkey(clientEndpoint.getRegisteredSendMemory().getLkey());
             sges.add(sendSGE);
 
@@ -42,8 +43,8 @@ public class RdmaSendReceiveUtil {
 //            System.out.println("posting wr_id " + workReqId);
             LinkedList<IbvSge> sges = new LinkedList<IbvSge>();
             IbvSge sendSGE = new IbvSge();
-            sendSGE.setAddr(clientEndpoint.getRegisteredSendMemory().getAddr());
-            sendSGE.setLength(clientEndpoint.getRegisteredSendMemory().getLength());
+            sendSGE.setAddr(clientEndpoint.getRegisteredSendMemory().getAddr()+4);
+            sendSGE.setLength(clientEndpoint.getRegisteredSendMemory().getLength()-4);
             sendSGE.setLkey(clientEndpoint.getRegisteredSendMemory().getLkey());
             sges.add(sendSGE);
             // Create send Work Request (WR)
@@ -67,7 +68,9 @@ public class RdmaSendReceiveUtil {
 
         if (endpoint instanceof RdmaShuffleServerEndpoint) {
 //            System.out.println("posting wr_id " + workReqId);
+
             RdmaShuffleServerEndpoint clientEndpoint = (RdmaShuffleServerEndpoint) endpoint;
+            clientEndpoint.getReceiveBuffer().clear();
             LinkedList<IbvSge> sges = new LinkedList<IbvSge>();
             IbvSge recvSGE = new IbvSge();
             recvSGE.setAddr(clientEndpoint.getRegisteredReceiveMemory().getAddr());
@@ -85,6 +88,7 @@ public class RdmaSendReceiveUtil {
         } else if (endpoint instanceof RdmaShuffleClientEndpoint) {
 //            System.out.println("posting wr_id " + workReqId);
             RdmaShuffleClientEndpoint clientEndpoint = (RdmaShuffleClientEndpoint) endpoint;
+            clientEndpoint.getReceiveBuffer().clear();
             LinkedList<IbvSge> sges = new LinkedList<IbvSge>();
             IbvSge recvSGE = new IbvSge();
             recvSGE.setAddr(clientEndpoint.getRegisteredReceiveMemory().getAddr());

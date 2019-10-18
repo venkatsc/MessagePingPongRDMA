@@ -132,6 +132,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                             clientEndpoint.getReceiveBuffer().clear();
                             RdmaMessage.PartitionRequest request = new RdmaMessage.PartitionRequest(clientRequest
                                     .getPartitionId());
+                            clientEndpoint.getSendBuffer().clear();
                             request.writeTo(clientEndpoint.getSendBuffer());
                             RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId); // post next receive
                             RdmaSendReceiveUtil.postSendReq(clientEndpoint, ++workRequestId);

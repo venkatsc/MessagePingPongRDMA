@@ -115,6 +115,7 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
                 int i = 0;
                 RdmaSendReceiveUtil.postReceiveReq(endpoint, ++workRequestId);
                 RdmaMessage.PartitionRequest request = new RdmaMessage.PartitionRequest(i);
+                endpoint.getSendBuffer().clear();
                 request.writeTo(endpoint.getSendBuffer());
                 RdmaSendReceiveUtil.postSendReq(endpoint, ++workRequestId);
                 while (i < 50) {
@@ -138,6 +139,7 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
                             RdmaSendReceiveUtil.postReceiveReq(endpoint, ++workRequestId);
 
                             RdmaMessage.PartitionRequest request1 = new RdmaMessage.PartitionRequest(i);
+                            endpoint.getSendBuffer().clear();
                             request1.writeTo(endpoint.getSendBuffer());
                             RdmaSendReceiveUtil.postSendReq(endpoint, ++workRequestId);
                         }

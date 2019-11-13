@@ -78,6 +78,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
     public void run() {
         //create a EndpointGroup. The RdmaActiveEndpointGroup contains CQ processing and delivers CQ event to the
         // endpoint.dispatchCqEvent() method.
+
         try {
             endpointGroup = new RdmaActiveEndpointGroup<RdmaShuffleServerEndpoint>(1000, true, 128, 4, 128);
             endpointGroup.init(this);
@@ -100,6 +101,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
             System.out.println("SimpleServer::servers bound to address " + address.toString());
             int conns = 0;
             while (conns < 2) {
+                long start = System.currentTimeMillis();
                 //we can accept new connections
                 clientEndpoint = serverEndpoint.accept();
                 clientEndpoint.setReceiveBuffer(receiveBuffer);
@@ -148,6 +150,8 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                         System.out.println("failed to match any condition " + wc.getOpcode());
                     }
                 }
+                long end = System.currentTimeMillis();
+                System.out.println("total time: "+ (end-start));
                 clientEndpoint.close();
             }
             //close everything

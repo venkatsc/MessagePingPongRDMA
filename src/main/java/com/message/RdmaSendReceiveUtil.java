@@ -19,8 +19,8 @@ public class RdmaSendReceiveUtil {
             LinkedList<IbvSge> sges = new LinkedList<IbvSge>();
             IbvSge sendSGE = new IbvSge();
             // let us dicard dummy value..first one should be the magic in the
-            sendSGE.setAddr(clientEndpoint.getRegisteredSendMemory().getAddr()+4);
-            sendSGE.setLength(clientEndpoint.getRegisteredSendMemory().getLength()-4);
+            sendSGE.setAddr(clientEndpoint.getRegisteredSendMemory().getAddr());
+            sendSGE.setLength(clientEndpoint.getRegisteredSendMemory().getLength());
             sendSGE.setLkey(clientEndpoint.getRegisteredSendMemory().getLkey());
             sges.add(sendSGE);
 
@@ -37,6 +37,7 @@ public class RdmaSendReceiveUtil {
 
             LinkedList<IbvSendWR> sendWRs = new LinkedList<>();
             sendWRs.add(sendWR);
+
             clientEndpoint.postSend(sendWRs).execute().free();
         } else if (endpoint instanceof RdmaShuffleClientEndpoint) {
             RdmaShuffleClientEndpoint clientEndpoint = (RdmaShuffleClientEndpoint) endpoint;

@@ -28,7 +28,6 @@ public abstract class RdmaMessage {
                 throw new Exception("Insufficient buffer capacity to write. Actual " + buffer.capacity() + " required" +
                         " " + PartitionRequest.MESSAGE_LENGTH);
             }
-            buffer.putInt(5);
             buffer.putInt(MAGIC_NUMBER);
             buffer.put(ID);
             buffer.putInt(partitionId);
@@ -73,7 +72,6 @@ public abstract class RdmaMessage {
                 throw new Exception("Insufficient buffer capacity to write. Actual " + buffer.capacity() + " required" +
                         " " + PartitionResponse.MESSAGE_LENGTH);
             }
-            buffer.putInt(5);
             buffer.putInt(MAGIC_NUMBER);
             buffer.put(ID);
             buffer.putInt(partitionId);

@@ -31,6 +31,7 @@ public abstract class RdmaMessage {
             buffer.putInt(MAGIC_NUMBER);
             buffer.put(ID);
             buffer.putInt(partitionId);
+         //   buffer.putLong(System.nanoTime());
         }
 
         static RdmaMessage readFrom(ByteBuffer buffer) throws Exception {
@@ -42,6 +43,7 @@ public abstract class RdmaMessage {
             validateMagice(buffer.getInt());
             buffer.get(); //discard ID
             PartitionRequest request = new PartitionRequest(buffer.getInt());
+           // System.out.println("latency of request message "+ request.getPartitionId()+ " is " +(System.nanoTime() - buffer.getLong()));
             return request;
         }
     }
@@ -75,6 +77,7 @@ public abstract class RdmaMessage {
             buffer.putInt(MAGIC_NUMBER);
             buffer.put(ID);
             buffer.putInt(partitionId);
+            buffer.putLong(System.nanoTime());
 //            buffer.asCharBuffer().put(message);
         }
 
@@ -87,9 +90,7 @@ public abstract class RdmaMessage {
             buffer.get();
 //            System.out.println("Response message id "+(int)buffer.get());
             PartitionResponse response = new PartitionResponse(buffer.getInt());
-//            byte[] message = new byte[20];
-//            System.out.println(buffer.capacity());
-//            System.out.println(buffer.get(message, 9, 30).toString());
+            System.out.println("latency of resp the message " + response.getPartitionId() + " is "+ (System.nanoTime() - buffer.getLong()));
             return response;
         }
 

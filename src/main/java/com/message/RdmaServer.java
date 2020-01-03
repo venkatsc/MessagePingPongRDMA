@@ -118,7 +118,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                 int i = 0;
                 while (i < 50) {
 //                long start = System.nanoTime();
-                    IbvWC wc = clientEndpoint.getWcEvents().take();
+                  IbvWC wc = clientEndpoint.getWcEvents().take();
 //                long end = System.nanoTime();
 //                System.out.println("Server Latency to pop-element out of queue "+ (end-start));
                     if (IbvWC.IbvWcOpcode.valueOf(wc.getOpcode()) == IbvWC.IbvWcOpcode.IBV_WC_RECV) {
@@ -151,7 +151,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                     }
                 }
                 long end = System.currentTimeMillis();
-                System.out.println("total time: "+ (end-start));
+                System.out.println("total time (ms): "+ (end-start));
                 clientEndpoint.close();
             }
             //close everything

@@ -44,8 +44,8 @@ public class RdmaSendReceiveUtil {
 //            System.out.println("posting wr_id " + workReqId);
             LinkedList<IbvSge> sges = new LinkedList<IbvSge>();
             IbvSge sendSGE = new IbvSge();
-            sendSGE.setAddr(clientEndpoint.getRegisteredSendMemory().getAddr()+4);
-            sendSGE.setLength(clientEndpoint.getRegisteredSendMemory().getLength()-4);
+            sendSGE.setAddr(clientEndpoint.getRegisteredSendMemory().getAddr());
+            sendSGE.setLength(clientEndpoint.getRegisteredSendMemory().getLength());
             sendSGE.setLkey(clientEndpoint.getRegisteredSendMemory().getLkey());
             sges.add(sendSGE);
             // Create send Work Request (WR)

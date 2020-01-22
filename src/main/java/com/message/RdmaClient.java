@@ -31,7 +31,7 @@ public class RdmaClient implements RdmaEndpointFactory<RdmaShuffleClientEndpoint
     }
 
     public RdmaShuffleClientEndpoint createEndpoint(RdmaCmId idPriv, boolean serverSide) throws IOException {
-        return new RdmaShuffleClientEndpoint(endpointGroup, idPriv, serverSide, 4096);
+        return new RdmaShuffleClientEndpoint(endpointGroup, idPriv, serverSide, 32*1024);
     }
 
     public void run() throws Exception {

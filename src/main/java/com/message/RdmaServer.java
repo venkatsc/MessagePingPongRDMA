@@ -38,7 +38,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
      * @throws java.io.IOException
      */
     public RdmaShuffleServerEndpoint createEndpoint(RdmaCmId idPriv, boolean serverSide) throws IOException {
-        return new RdmaShuffleServerEndpoint(endpointGroup, idPriv, serverSide, 4096);
+        return new RdmaShuffleServerEndpoint(endpointGroup, idPriv, serverSide, 32*1024);
     }
 
     public RdmaServer(RdmaConfig rdmaConfig) {
@@ -64,7 +64,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
         }
         System.out.println("SimpleServer::servers bound to address " + address.toString());
         int conns=0;
-        while(conns<2) {
+        while(conns<1) {
             //we can accept new connections
             clientEndpoint = serverEndpoint.accept();
             conns++;
@@ -88,7 +88,9 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
 //        }
             RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId);
             while (i <= 50) {
+                long start = System.nanoTime();
                 IbvWC wc = clientEndpoint.getWcEvents().take();
+                long end = System.nanoTime();
                 if (IbvWC.IbvWcOpcode.valueOf(wc.getOpcode()) == IbvWC.IbvWcOpcode.IBV_WC_RECV) {
                     i++;
                     if (wc.getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {
@@ -96,7 +98,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                         RdmaSendReceiveUtil.postReceiveReq(clientEndpoint, ++workRequestId);
                     } else { // first receive succeeded. Read the data and repost the next message
                         RdmaMessage.PartitionRequest clientRequest = (RdmaMessage.PartitionRequest) RdmaMessage.PartitionRequest.readFrom(clientEndpoint.getReceiveBuffer());
-                        System.out.println("client requested partition id: " + clientRequest.getPartitionId());
+//                        System.out.println("client requested partition id: " + clientRequest.getPartitionId());
 //                        RdmaMessage.PartitionRequest request = new RdmaMessage.PartitionRequest(clientRequest
 //                                .getPartitionId());
                         clientEndpoint.getReceiveBuffer().clear();
@@ -105,6 +107,7 @@ public class RdmaServer implements RdmaEndpointFactory<RdmaShuffleServerEndpoint
                         RdmaSendReceiveUtil.postSendReq(clientEndpoint, ++workRequestId);
                     }
                 } else if (IbvWC.IbvWcOpcode.valueOf(wc.getOpcode()) == IbvWC.IbvWcOpcode.IBV_WC_SEND) {
+                    System.out.println((end-start)/1000000.0);
                     if (wc.getStatus() != IbvWC.IbvWcStatus.IBV_WC_SUCCESS.ordinal()) {
                         System.out.println("Send failed. reposting new send request request");
                         RdmaSendReceiveUtil.postSendReq(clientEndpoint, ++workRequestId);
